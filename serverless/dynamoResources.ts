@@ -25,6 +25,21 @@ const dynamoResources: AWS["resources"]["Resources"] = {
       StreamSpecification: {
         StreamViewType: "OLD_IMAGE",
       },
+      GloabalSecondaryIndexes: [
+        {
+          IndexName: "index1",
+          KeySchema: [
+            {
+              AttributeName: "pk",
+              KeyType: "HASH",
+            },
+            {
+              AttributeName: "sk",
+              KeyType: "RANGE",
+            },
+          ],
+        },
+      ],
     },
   },
 };
