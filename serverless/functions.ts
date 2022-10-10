@@ -12,6 +12,24 @@ const functions: AWS["functions"] = {
       },
     ],
   },
+  sendReminder: {
+    handler: "src/functions/sendReminder/index.handler",
+    events: [
+      {
+        stream: {
+          type: "dynamodb",
+          arn: {
+            "Fn::GetAtt": ["reminderTable", "StreamArn"],
+          },
+          filterPatterns: [
+            {
+              eventName: ["REMOVE"],
+            },
+          ],
+        },
+      },
+    ],
+  },
 };
 
 export default functions;

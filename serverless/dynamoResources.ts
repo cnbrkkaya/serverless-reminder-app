@@ -22,6 +22,9 @@ const dynamoResources: AWS["resources"]["Resources"] = {
         AttributeName: "TTL",
         Enabled: true,
       },
+      StreamSpecification: {
+        StreamViewType: "OLD_IMAGE",
+      },
     },
   },
 };
