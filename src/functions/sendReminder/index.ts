@@ -1,6 +1,20 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import {
+  SESClient,
+  SendEmailCommand,
+  SendEmailCommandInput,
+} from "@aws-sdk/client-ses";
+
+import {
+  SNSClient,
+  PublishCommand,
+  PublishCommandInput,
+} from "@aws-sdk/client-sns";
+
+const sesClient = new SESClient({});
+const snsClient = new SNSClient({});
 
 export const handler = async (event: DynamoDBStreamEvent) => {
   try {
@@ -20,4 +34,50 @@ export const handler = async (event: DynamoDBStreamEvent) => {
   } catch (error) {
     console.log("error", error);
   }
+};
+
+const sendEmail = async ({
+  email,
+  reminder,
+}: {
+  email: string;
+  reminder: string;
+}) => {
+  const params: SendEmailCommandInput = {
+    Source: "dev.canberkkaya@gmail.com",
+    Destination: {
+      ToAddresses: [email],
+    },
+    Message: {
+      Body: {
+        Text: {
+          Data: reminder,
+          Charset: "UTF-8",
+        },
+      },
+      Subject: {
+        Data: "Your Reminder!",
+        Charset: "UTF-8",
+      },
+    },
+  };
+  const command = new SendEmailCommand(params);
+  const res = sesClient.send(command);
+  return (await res).MessageId;
+};
+
+const sendSMS = async ({
+  phoneNumber,
+  reminder,
+}: {
+  phoneNumber: string;
+  reminder: string;
+}) => {
+  const params: PublishCommandInput = {
+    Message: reminder,
+    PhoneNumber: phoneNumber,
+  };
+  const command = new PublishCommand(params);
+  const res = await snsClient.send(command);
+  return res.MessageId;
 };
