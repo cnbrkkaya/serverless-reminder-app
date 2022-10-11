@@ -38,6 +38,17 @@ const functions: AWS["functions"] = {
       },
     ],
   },
+  getReminder: {
+    handler: "src/functions/getReminder/index.handler",
+    events: [
+      {
+        httpApi: {
+          path: "/{userId}",
+          method: "get",
+        },
+      },
+    ],
+  },
 };
 
 export default functions;

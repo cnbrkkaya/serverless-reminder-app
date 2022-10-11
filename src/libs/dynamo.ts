@@ -4,6 +4,8 @@ import {
   PutCommandInput,
   GetCommand,
   GetCommandInput,
+  QueryCommand,
+  QueryCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 
 const dynamoClient = new DynamoDBClient({});
@@ -31,5 +33,40 @@ export const dynamo = {
     const response = await dynamoClient.send(command);
 
     return response.Item;
+  },
+  query: async ({
+    tableName,
+    index,
+    pkValue,
+    pkKey = "pk",
+    skValue,
+    skKey = "sk",
+    sortAscending = true,
+  }: {
+    tableName: string;
+    index: string;
+    pkValue: string;
+    pkKey?: string;
+    skValue?: string;
+    skKey?: string;
+    sortAscending?: boolean;
+  }) => {
+    const skExpression = skValue ? `AND ${skKey} = :rangeValue` : "";
+
+    const params: QueryCommandInput = {
+      TableName: tableName,
+      IndexName: index,
+      KeyConditionExpression: `${pkKey} = :hashValue ${skExpression}`,
+      ExpressionAttributeValues: {
+        ":hashValue": pkValue,
+      },
+    };
+    if (skValue) {
+      params.ExpressionAttributeValues[":rangeValue"] = skValue;
+    }
+
+    const command = new QueryCommand(params);
+    const response = await dynamoClient.send(command);
+    return response.Items;
   },
 };
